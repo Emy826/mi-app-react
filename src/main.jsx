@@ -3,6 +3,64 @@ import { useState } from 'react'
 import logo from '../utzac.jpg'
 
 function MyForm() {
+  const [loading, setLoading] = useState(false);
+  const [mensaje, setMensaje] = useState('');
+  const [tipoMensaje, setTipoMensaje] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Validar formulario
+    if (!e.target.checkValidity()) {
+      e.target.classList.add('was-validated');
+      return;
+    }
+
+    setLoading(true);
+    setMensaje('');
+
+    try {
+      const formData = new FormData(e.target);
+      const datos = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        telefono: formData.get('telefono'),
+        escuela: formData.get('escuela'),
+        carrera: formData.get('carrera'),
+      };
+
+      // Llamar al backend en Neon
+      const response = await fetch('http://localhost:5000/api/guardar-datos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(datos),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setTipoMensaje('success');
+        setMensaje('✅ ' + result.mensaje);
+        e.target.reset();
+        e.target.classList.remove('was-validated');
+        // Recargar la página después de 2 segundos
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } else {
+        setTipoMensaje('danger');
+        setMensaje('❌ Error: ' + (result.error || 'No se pudo guardar'));
+      }
+    } catch (error) {
+      setTipoMensaje('danger');
+      setMensaje('❌ Error de conexión: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       {/* NAVBAR */}
@@ -61,10 +119,17 @@ function MyForm() {
         <h3>Formulario de preregistro</h3>
         <p>Información de contacto</p>
 
+        {mensaje && (
+          <div className={`alert alert-${tipoMensaje} alert-dismissible fade show`} role="alert">
+            {mensaje}
+            <button type="button" className="btn-close" onClick={() => setMensaje('')}></button>
+          </div>
+        )}
+
         <form
-          action="http://localhost/action_guardar_datos.php"
-          method="POST"
+          onSubmit={handleSubmit}
           className="was-validated"
+          noValidate
         >
 
           <div className="mb-3 mt-3">
@@ -159,8 +224,8 @@ function MyForm() {
             </label>
           </div>
 
-          <button type="submit" className="btn btn-primary">
-            Enviar
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? 'Guardando...' : 'Enviar'}
           </button>
 
         </form>

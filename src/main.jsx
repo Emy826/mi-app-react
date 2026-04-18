@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import { useState } from 'react'
+import { supabase } from './supabaseClient'
 import logo from '../utzac.jpg'
 
 function MyForm() {
@@ -29,20 +30,22 @@ function MyForm() {
         carrera: formData.get('carrera'),
       };
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      const response = await fetch(`${apiUrl}/api/guardar-datos`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(datos),
-      });
+      // Llamar directamente a Supabase
+      const { data, error } = await supabase
+        .from('prospectos')
+        .insert([
+          {
+            nombre: datos.name,
+            email: datos.email,
+            telefono: datos.telefono,
+            escuela: datos.escuela,
+            carrera: datos.carrera
+          }
+        ]);
 
-      const result = await response.json();
-
-      if (response.ok && result.success) {
+      if (!error) {
         setTipoMensaje('success');
-        setMensaje('✅ ' + result.mensaje);
+        setMensaje('✅ Registro guardado con éxito');
         e.target.reset();
         e.target.classList.remove('was-validated');
         // Recargar la página después de 2 segundos
@@ -51,7 +54,7 @@ function MyForm() {
         }, 2000);
       } else {
         setTipoMensaje('danger');
-        setMensaje('❌ Error: ' + (result.error || 'No se pudo guardar'));
+        setMensaje('❌ Error: ' + (error.message || 'No se pudo guardar'));
       }
     } catch (error) {
       setTipoMensaje('danger');

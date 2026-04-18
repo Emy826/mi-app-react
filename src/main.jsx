@@ -10,7 +10,7 @@ function MyForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validar formulario
     if (!e.target.checkValidity()) {
       e.target.classList.add('was-validated');
@@ -32,11 +32,11 @@ function MyForm() {
 
       // Llamar directamente a Supabase
       const { data, error } = await supabase
-        .from('prospectos')
+        .from('Integradora')
         .insert([
           {
             nombre: datos.name,
-            email: datos.email,
+            correo: datos.email,
             telefono: datos.telefono,
             escuela: datos.escuela,
             carrera: datos.carrera
@@ -72,7 +72,7 @@ function MyForm() {
 
           {/* LOGO */}
           <a className="navbar-brand" href="#">
-            <img src={logo} alt="UTZAC" style={{height:"45px"}} />
+            <img src={logo} alt="UTZAC" style={{ height: "45px" }} />
           </a>
 
           <button

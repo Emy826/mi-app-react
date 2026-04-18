@@ -32,7 +32,7 @@ function MyForm() {
 
       // Llamar directamente a Supabase
       const { data, error } = await supabase
-        .from('Integradora')
+        .from('integradora')
         .insert([
           {
             nombre: datos.name,
